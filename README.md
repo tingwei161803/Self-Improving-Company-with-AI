@@ -43,7 +43,6 @@ Self-Improving-Company-with-AI/
 ├── assets/
 │   ├── styles.css    # Editorial Luxury 視覺(暖紙/深咖啡雙主題 + 動態)
 │   └── app.js        # 區段渲染註冊表、雙語切換、scrollspy、modal、深連結
-├── tmp/              # 原始素材(英文逐字稿 srt.md + 中文編輯稿 tmp.md)
 ├── .nojekyll         # 讓 GitHub Pages 跳過 Jekyll
 └── README.md
 ```
