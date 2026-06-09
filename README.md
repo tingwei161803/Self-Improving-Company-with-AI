@@ -10,9 +10,9 @@
 
 | | |
 |---|---|
-| 🌐 網站 | <https://tingwei161803.github.io/Self-Improving-Company-with-AI/> |
+| 🌐 網站 | <https://self-improving-company-with-ai.peteraim.com/> |
 
-> 直接點進去就能用,無需安裝。可用 `https://tingwei161803.github.io/Self-Improving-Company-with-AI/#<slug>` 深連結到特定卡片(例如 `#sensor-layer`、`#role-dri`)。
+> 直接點進去就能用,無需安裝。可用 `https://self-improving-company-with-ai.peteraim.com/#<slug>` 深連結到特定卡片(例如 `#sensor-layer`、`#role-dri`)。
 
 ---
 
