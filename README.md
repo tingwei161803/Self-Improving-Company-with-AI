@@ -69,13 +69,6 @@ uv run python -m http.server 4173
 
 > 本專案為純靜態網站,不需安裝任何依賴。若要跑本機伺服器,依使用者偏好一律使用 `uv`。
 
-### (選配)跑 UX 驗證
-
-```bash
-uv run --with playwright playwright install chromium       # 首次:下載瀏覽器
-uv run --with playwright python <skill>/scripts/verify.py --dir .
-```
-
 ---
 
 ## 📝 聲明 / License

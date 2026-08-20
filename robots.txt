@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://self-improving-company-with-ai.peteraim.com/sitemap.xml
