@@ -838,6 +838,16 @@ a { color: inherit; text-decoration: none; }
   border-top: 1px solid var(--hair);
 }
 
+/* Plain link to the other language, below the footer. It sits in the markup
+   (not behind the toggle's JS) so a reader without JS still has a way across. */
+.lang-alt-link {
+  margin: -36px 0 0;          /* tuck up into the footer's bottom padding */
+  color: var(--on-surface-variant);
+  font-size: .86rem;
+}
+.lang-alt-link a { border-bottom: 1px solid var(--hair); padding-bottom: 2px; }
+.lang-alt-link a:hover { color: var(--primary); border-bottom-color: currentColor; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 720px) {
   body { font-size: 16px; }
