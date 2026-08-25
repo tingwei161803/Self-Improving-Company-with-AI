@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh" data-theme="light">
+<html lang="zh-Hant" data-theme="light">
 <head>
   <!-- ==== Google Analytics 4 (Measurement ID: G-PR99EJ7JCW) ==== -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-PR99EJ7JCW"></script>
@@ -17,6 +17,9 @@
   <title>用 AI 打造一間會自己進化的公司 · How to Build a Self-Improving Company with AI</title>
   <meta name="description" content="YC 合夥人 Tom Blomfield 談如何把公司的 know-how 萃取出來、讓 AI 可讀,並建立遞迴、自我改進的 AI 迴圈 —— 連你睡覺時都在變好。中英雙語整理。" />
   <link rel="canonical" href="https://self-improving-company-with-ai.peteraim.com/" />
+  <link rel="alternate" hreflang="zh-Hant" href="https://self-improving-company-with-ai.peteraim.com/" />
+  <link rel="alternate" hreflang="en" href="https://self-improving-company-with-ai.peteraim.com/en/" />
+  <link rel="alternate" hreflang="x-default" href="https://self-improving-company-with-ai.peteraim.com/" />
   <meta name="theme-color" content="#1a1714" />
 
   <!-- ==== Open Graph ==== -->
@@ -37,12 +40,12 @@
   {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "How to Build a Self-Improving Company with AI",
-    "description": "A YC talk by Tom Blomfield on turning a company into recursive, self-improving AI loops.",
+    "headline": "用 AI 打造一間會自己進化的公司",
+    "description": "YC 合夥人 Tom Blomfield 談如何把公司變成一組遞迴、自我改進的 AI 迴圈。",
     "author": { "@type": "Person", "name": "Tom Blomfield" },
     "publisher": { "@type": "Organization", "name": "Y Combinator" },
     "url": "https://self-improving-company-with-ai.peteraim.com/",
-    "inLanguage": ["zh-Hant", "en"]
+    "inLanguage": "zh-Hant"
   }
   </script>
 
@@ -71,11 +74,11 @@
           <span class="icon-btn__txt" id="ghStarCount">GitHub</span>
         </a>
 
-        <button class="icon-btn" id="langToggle" type="button"
-                title="Language" aria-label="Toggle language / 切換語言">
+        <a class="icon-btn" id="langToggle" href="/en/" hreflang="en" rel="alternate" lang="en"
+           title="Language" aria-label="Switch language / 切換語言">
           <span class="material-symbols-rounded">translate</span>
-          <span class="icon-btn__txt" id="langLabel">中</span>
-        </button>
+          <span class="icon-btn__txt" id="langLabel">EN</span>
+        </a>
 
         <button class="icon-btn" id="themeToggle" type="button"
                 title="Theme" aria-label="Toggle theme / 切換主題">
@@ -124,5 +127,6 @@
   <!-- ==== Scripts (order matters: data first) ==== -->
   <script src="data/data.js"></script>
   <script src="assets/app.js"></script>
+<p class="lang-alt-link" style="text-align:center;padding:12px;"><a href="/en/" hreflang="en" rel="alternate" lang="en">English version</a></p>
 </body>
 </html>

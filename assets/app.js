@@ -14,10 +14,10 @@
    body of that section. To add a new block type, add one entry to RENDERERS
    and (optionally) an icon to NAV_ICONS — nothing else needs to change.
 
-   A single render() call repaints EVERY section + the sticky nav + chrome +
-   <title> in the active language, so the zh/en toggle never leaves anything
-   stuck. Hero stat counters count up, and [data-item] blocks fade up into view
-   via IntersectionObserver.
+   The language comes from the URL (`/` = Chinese, `/en/` = English) via the
+   page's <html lang>; a single render() call paints EVERY section + the sticky
+   nav + chrome + <title> in it. Hero stat counters count up, and [data-item]
+   blocks fade up into view via IntersectionObserver.
    ========================================================================= */
 (function () {
   "use strict";
@@ -38,9 +38,32 @@
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } }
 
+  /* ---------- language is owned by the URL ---------- */
+  /* `/` is Chinese, `/en/` is English, and <html lang> on each page says which.
+     localStorage must never pick the language: a crawler has none and would
+     always land on the fallback, and a returning reader would see a different
+     page than the URL promises. The preference is still written, just not read
+     back for the initial language. */
+  var LANG_DIR  = "/en";                        // secondary-language directory
+  var HTML_LANG = { zh: "zh-Hant", en: "en" };  // <html lang> / hreflang codes
+
+  function langFromDocument() {
+    var declared = (document.documentElement.getAttribute("lang") || "en").toLowerCase();
+    return declared.indexOf("zh") === 0 ? "zh" : "en";
+  }
+
+  /* this same page in the other language — the toggle link's destination */
+  function altPath() {
+    var p = location.pathname;
+    if (p === LANG_DIR || p.indexOf(LANG_DIR + "/") === 0) {
+      return p.slice(LANG_DIR.length) || "/";
+    }
+    return LANG_DIR + (p.charAt(0) === "/" ? p : "/" + p);
+  }
+
   /* ---------- global state ---------- */
   var state = {
-    lang:  lsGet("lang")  || "en",       // default language: zh
+    lang:  langFromDocument(),
     theme: lsGet("theme") || "light"
   };
 
@@ -318,7 +341,7 @@
   }
 
   function paintChrome() {
-    document.documentElement.setAttribute("lang", state.lang);
+    document.documentElement.setAttribute("lang", HTML_LANG[state.lang]);
     var titleStr = t(META.title);
     var subStr = t(META.subtitle);
     document.title = subStr ? titleStr + " · " + subStr : titleStr;
@@ -489,8 +512,15 @@
     lsSet("theme", state.theme);
   }
   function applyLangChrome() {
+    var other = state.lang === "en" ? "zh" : "en";
+    var toggle = $("langToggle");
+    if (toggle) {
+      toggle.setAttribute("href", altPath());
+      toggle.setAttribute("hreflang", HTML_LANG[other]);
+      toggle.setAttribute("lang", HTML_LANG[other]);
+    }
     var label = $("langLabel");
-    if (label) label.textContent = state.lang === "en" ? "EN" : "中";
+    if (label) label.textContent = other === "en" ? "EN" : "中";  // where the link goes
     lsSet("lang", state.lang);
   }
 
@@ -529,13 +559,8 @@
       applyTheme();
     });
 
-    $("langToggle").addEventListener("click", function () {
-      state.lang = state.lang === "en" ? "zh" : "en";
-      applyLangChrome();
-      var openSlug = isSlugHash() ? location.hash.slice(1) : null;
-      render();                       // repaint EVERYTHING in the new language
-      if (dialog.open && openSlug) openDialog(openSlug);  // repaint open dialog too
-    });
+    /* #langToggle is a plain link now — clicking it navigates to the other
+       language's URL, so there is nothing to repaint in place. */
 
     $("dialogClose").addEventListener("click", closeDialog);
     dialog.addEventListener("click", function (e) { if (e.target === dialog) closeDialog(); });
