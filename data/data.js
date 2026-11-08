@@ -8,7 +8,8 @@
    single language toggle repaints the whole page with nothing left behind.
 
    Section types consumed by app.js's RENDERERS registry:
-     hero | prose | cards | timeline | accordion | quotes | sources | cta
+     hero | prose | layers | timeline | columns | spread | entries | quotes |
+     chapters | sources | cta
    ========================================================================= */
 
 window.SITE_META = {
@@ -24,6 +25,7 @@ window.SITE_SECTIONS = [
   {
     type: "hero",
     id: "overview",
+    nav:      { en: "Opening", zh: "開場" },
     eyebrow: { en: "Y Combinator · AI Startup School",
                zh: "Y Combinator · AI 創業學校" },
     title:    { en: "A company that improves while you sleep",
@@ -46,6 +48,7 @@ window.SITE_SECTIONS = [
   {
     type: "prose",
     id: "thesis",
+    nav:      { en: "Thesis", zh: "論點" },
     title:    { en: "Companies are still built like Roman legions",
                 zh: "今天的公司，還是照羅馬軍團在組織" },
     subtitle: { en: "And AI breaks the assumption that hierarchy is how value gets made.",
@@ -71,12 +74,14 @@ window.SITE_SECTIONS = [
 
   /* --------------------------------------------------------------- CARDS: architecture */
   {
-    type: "cards",
+    type: "layers",
     id: "architecture",
+    nav:      { en: "Five layers", zh: "五層架構" },
     title:    { en: "The five layers of an AI loop",
                 zh: "AI 迴圈的五層架構" },
-    subtitle: { en: "Run every step with minimal human intervention and the system gets better on its own. Tap a layer for detail.",
-                zh: "讓這五步在最少人為介入下跑完，系統就會自己越跑越好。點一層看細節。" },
+    subtitle: { en: "Run every step with minimal human intervention and the system gets better on its own.",
+                zh: "讓這五步在最少人為介入下跑完，系統就會自己越跑越好。" },
+    loopLabel: { en: "What failed feeds back into layer 1", zh: "行不通的地方，回饋到第一層" },
     items: [
       { slug: "sensor-layer",
         title:   { en: "1 · Sensor layer", zh: "第一層 · 感測層" },
@@ -120,6 +125,7 @@ window.SITE_SECTIONS = [
   {
     type: "timeline",
     id: "case-study",
+    nav:      { en: "The YC case", zh: "YC 實例" },
     title:    { en: "The “holy shit” moment at YC",
                 zh: "YC 的「holy shit」時刻" },
     subtitle: { en: "A live, in-production example of a loop that learned to fix itself overnight.",
@@ -150,8 +156,9 @@ window.SITE_SECTIONS = [
 
   /* --------------------------------------------------------------- CARDS: more loops */
   {
-    type: "cards",
+    type: "columns",
     id: "loops",
+    nav:      { en: "More loops", zh: "更多迴圈" },
     title:    { en: "The same logic, everywhere",
                 zh: "同一套邏輯，可以套到任何地方" },
     subtitle: { en: "Find the parts of your company that can run as loops, put humans in a supervisory seat, and just keep feeding it tokens.",
@@ -183,8 +190,9 @@ window.SITE_SECTIONS = [
 
   /* --------------------------------------------------------------- ACCORDION: shifts */
   {
-    type: "accordion",
+    type: "spread",
     id: "shifts",
+    nav:      { en: "Two shifts", zh: "兩個轉變" },
     title:    { en: "Two shifts this forces", zh: "這會逼出兩個觀念轉變" },
     subtitle: { en: "What changes once you take loops seriously.",
                 zh: "當你認真看待迴圈之後，有什麼會變。" },
@@ -200,8 +208,9 @@ window.SITE_SECTIONS = [
 
   /* --------------------------------------------------------------- CARDS: three roles */
   {
-    type: "cards",
+    type: "entries",
     id: "roles",
+    nav:      { en: "Three roles", zh: "三種角色" },
     title:    { en: "Three roles, no permanent managers",
                 zh: "三種角色，不需要常設的管理層" },
     subtitle: { en: "Jack Dorsey's framing: the world model handles alignment, so people sit closer to the work and the customer.",
@@ -235,6 +244,7 @@ window.SITE_SECTIONS = [
   {
     type: "prose",
     id: "legible",
+    nav:      { en: "Legible to AI", zh: "讓 AI 可讀" },
     title:    { en: "Where to start: make the org legible to AI",
                 zh: "從哪裡開始：讓組織對 AI 可讀" },
     subtitle: { en: "Record everything, distil it, and treat software as disposable — but data as sacred.",
@@ -271,6 +281,7 @@ window.SITE_SECTIONS = [
   {
     type: "quotes",
     id: "humans",
+    nav:      { en: "Humans", zh: "人的位置" },
     title:    { en: "So what are humans for?", zh: "那，人類是做什麼的？" },
     subtitle: { en: "Humans live around the edge of the company brain, where intelligence meets reality.",
                 zh: "人類活在「公司大腦」的外圍，在智能與現實接觸的地方。" },
@@ -289,8 +300,10 @@ window.SITE_SECTIONS = [
 
   /* --------------------------------------------------------------- TIMELINE: chapters */
   {
-    type: "timeline",
+    type: "chapters",
     id: "chapters",
+    video: "https://www.youtube.com/watch?v=X_JsIHUfUjc",
+    nav:      { en: "Chapters", zh: "影片章節" },
     title:    { en: "Chapters", zh: "影片章節" },
     subtitle: { en: "How the talk unfolds, start to finish.",
                 zh: "這場演講從頭到尾的脈絡。" },
@@ -326,6 +339,7 @@ window.SITE_SECTIONS = [
   {
     type: "sources",
     id: "sources",
+    nav:      { en: "Sources", zh: "來源" },
     title:    { en: "Sources & corroboration", zh: "延伸來源與佐證" },
     subtitle: { en: "The original talk and the references behind it.",
                 zh: "這場演講的原始出處，以及它引用的來源。" },
@@ -369,6 +383,7 @@ window.SITE_SECTIONS = [
   {
     type: "cta",
     id: "closing",
+    nav:      { en: "Closing", zh: "結語" },
     title: { en: "Would you build it this way today?", zh: "你今天會把公司建成這樣嗎？" },
     text:  { en: "Most companies are still small enough to build in this shape from day one — a recursive, self-improving intelligence with humans around the edge. There's no excuse not to.",
              zh: "大部分公司都還夠小，可以從第一天就建成這個樣子 —— 一個遞迴、自我改進的智能體，人類在外圍。沒有藉口不做。" },
