@@ -12,19 +12,19 @@
 |---|---|
 | 🌐 網站 | <https://self-improving-company-with-ai.peteraim.com/> |
 
-> 直接點進去就能用,無需安裝。可用 `https://self-improving-company-with-ai.peteraim.com/#<slug>` 深連結到特定卡片(例如 `#sensor-layer`、`#role-dri`)。
+> 直接點進去就能用,無需安裝。可用 `https://self-improving-company-with-ai.peteraim.com/#<slug>` 深連結到特定項目(例如 `#sensor-layer`、`#role-dri`)。
 
 ---
 
 ## ✨ 功能特色
 
-- 🌏 **全頁雙語切換** — 中文 / English 一鍵切換,整頁(含標題、卡片、詳情、章節、頁面 chrome)同步換語言,無殘留
-- 🌗 **深色 / 淺色模式** — 暖紙(editorial)淺色 ↔ 深咖啡深色,手動切換並以 localStorage 記憶
-- 🧭 **區段導覽 + scrollspy** — 頂部 sticky 導覽列,捲動時自動高亮目前所在區段
-- 🔢 **數字 count-up** — Hero 關鍵數據捲到視窗時動畫累加
-- 🪟 **卡片詳情 modal** — 點五層架構 / 應用場景 / 三種角色的卡片,展開完整說明
-- 🔗 **深連結** — 每張卡片都有專屬 `#<slug>`,可直接分享、回放
-- 🎞️ **進場動畫** — 區塊捲入時淡入上浮(尊重 `prefers-reduced-motion`)
+- 🌏 **中英雙語** — 中文在 `/`、英文在 `/en/`,各自有網址,切換鈕與頁尾都能互相切換
+- 🌙 **夜班迴圈主視覺** — 五層架構畫成一條封閉軌道上的五個站點,token 一圈圈跑、夜班時鐘從 00:00 走到 08:00;站點可點到對應段落。系統設定「減少動態」時完全靜止
+- 🌗 **深色 / 淺色模式** — 混凝土白 ↔ 石墨深色(主視覺與夜班紀錄兩種模式都是深色);預設跟隨系統設定,手動切換後以 localStorage 記憶
+- 🧭 **區段導覽 + scrollspy** — 頂部 sticky 的站點式導覽軌,捲動時自動標示目前所在區段;手機上可橫向捲動,兩側淡出提示
+- 🔁 **五層架構流程圖** — 藍圖格線上的五個站點,一條回饋線從第五層繞回第一層
+- 🔗 **深連結** — 每個項目都有專屬 `#<slug>`,可直接分享
+- ⏱️ **影片章節** — 每個時間戳直接連到影片的該秒數
 - 📚 **延伸來源與佐證** — 附原始演講影片與相關文章連結
 - 📱 **響應式設計** — 手機、平板、桌機皆適配(375px 無水平溢出)
 - ⚡ **純靜態零 build** — 無後端、無打包工具,載入快、可離線瀏覽
@@ -41,8 +41,8 @@ Self-Improving-Company-with-AI/
 ├── data/
 │   └── data.js       # 資料層:window.SITE_META + window.SITE_SECTIONS(雙語)
 ├── assets/
-│   ├── styles.css    # Editorial Luxury 視覺(暖紙/深咖啡雙主題 + 動態)
-│   └── app.js        # 區段渲染註冊表、雙語切換、scrollspy、modal、深連結
+│   ├── styles.css    # 「夜班」工業風視覺(石墨/混凝土白 + 安全黃,雙主題)
+│   └── app.js        # 區段渲染註冊表、主視覺迴圈動畫、雙語切換、scrollspy、深連結
 ├── .nojekyll         # 讓 GitHub Pages 跳過 Jekyll
 └── README.md
 ```
