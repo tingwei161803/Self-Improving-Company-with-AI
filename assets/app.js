@@ -20,7 +20,8 @@
    file's <main>, so readers without JS (and crawlers) get the full page.
 
    Nothing here hides content: there is no scroll-reveal. The only motion is
-   the five-layer loop's return arrow, drawn by CSS as it scrolls into view.
+   the hero's loop diagram (startLoop), which is complete as static markup and
+   stays still for readers who prefer reduced motion.
    ========================================================================= */
 (function () {
   "use strict";
@@ -33,10 +34,18 @@
   var I18N = {
     en: { footer: "Unofficial summary of a YC talk by Tom Blomfield · static, no backend.",
           brand: "Self-Improving Co.", menu: "On this page",
-          figures: "The talk in numbers", tags: "Keywords" },
+          figures: "The talk in numbers", tags: "Keywords",
+          loopAria: "The five-layer AI loop running overnight, from 00:00 to 08:00",
+          shift: "Night shift", asleep: "The company is asleep. The loop is not.",
+          lap: "Lap {n}", morning: "08:00 — the fix is already live",
+          brain: "Company brain", edge: "Humans at the edge" },
     zh: { footer: "Tom Blomfield（YC）演講之非官方整理 · 純靜態、無後端。",
           brand: "自我進化的公司", menu: "本頁導覽",
-          figures: "演講裡的數字", tags: "關鍵字" }
+          figures: "演講裡的數字", tags: "關鍵字",
+          loopAria: "五層 AI 迴圈在夜裡從 00:00 跑到 08:00",
+          shift: "夜班", asleep: "公司睡了，迴圈沒睡。",
+          lap: "第 {n} 圈", morning: "早上八點，修正已經上線",
+          brain: "公司大腦", edge: "人在邊緣" }
   };
 
   /* ---------- safe storage (sandbox / file:// may throw) ---------- */
@@ -123,6 +132,124 @@
       sub + "</header>";
   }
 
+  /* the five layers, read once from the "layers" section so the hero's loop
+     diagram and the schematic below always name the same stations */
+  function layerStations() {
+    var sec = SECTIONS.filter(function (s) { return s.type === "layers"; })[0];
+    return ((sec && sec.items) || []).map(function (item) {
+      var parts = t(item.title).split(" · ");
+      return {
+        slug: item.slug,
+        name: parts.length > 1 ? parts.slice(1).join(" · ") : parts[0],
+        sum: t(item.summary)
+      };
+    });
+  }
+  function loopLabel() {
+    var sec = SECTIONS.filter(function (s) { return s.type === "layers"; })[0];
+    return sec ? t(sec.loopLabel) : "";
+  }
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* geometry of the hero loop (SVG user units) */
+  var LOOP = { w: 820, h: 620, cx: 410, cy: 310, r: 220 };
+  function loopPoint(deg, radius) {
+    var a = deg * Math.PI / 180;
+    return { x: LOOP.cx + radius * Math.sin(a), y: LOOP.cy - radius * Math.cos(a) };
+  }
+
+  /* hero visual: the loop as a closed track with five stations, a token that
+     travels it and an overnight clock in the middle. Markup is static and
+     complete on its own; startLoop() only animates it. */
+  function loopFigure() {
+    var st = layerStations();
+    var n = st.length || 5;
+    var C = 2 * Math.PI * LOOP.r;
+
+    var ticks = "";
+    for (var k = 0; k < 120; k++) {
+      var deg = k * 3, major = k % 8 === 0;
+      var p1 = loopPoint(deg, LOOP.r + 16), p2 = loopPoint(deg, LOOP.r + (major ? 30 : 23));
+      ticks += '<line class="lv-tick' + (major ? " is-major" : "") + '" x1="' + r(p1.x) + '" y1="' + r(p1.y) +
+        '" x2="' + r(p2.x) + '" y2="' + r(p2.y) + '"/>';
+    }
+    /* direction chevrons between stations */
+    var chevrons = "";
+    for (var c = 0; c < n; c++) {
+      var mid = (c + 0.5) * 360 / n;
+      var pm = loopPoint(mid, LOOP.r);
+      chevrons += '<path class="lv-chev" d="M-6,-7 L4,0 L-6,7" transform="translate(' + r(pm.x) + " " + r(pm.y) +
+        ") rotate(" + r(mid) + ')"/>';
+    }
+    /* the feedback arc: from the last station back to the first */
+    var fa = loopPoint((n - 1) * 360 / n, LOOP.r), fb = loopPoint(360, LOOP.r);
+    var feedback = '<path class="lv-feedback" d="M' + r(fa.x) + "," + r(fa.y) + " A" + LOOP.r + "," + LOOP.r +
+      " 0 0 1 " + r(fb.x) + "," + r(fb.y) + '"/>';
+
+    var nodes = "", labels = "";
+    st.forEach(function (s, i) {
+      var d = i * 360 / n;
+      var p = loopPoint(d, LOOP.r), q = loopPoint(d, LOOP.r + 46);
+      var side = i === 0 ? "top" : (q.x > LOOP.cx + 1 ? "right" : "left");
+      var low = q.y > LOOP.cy + 40 ? " is-low" : "";
+      nodes += '<g class="lv-node' + (i === 0 ? " is-on" : "") + '" data-i="' + i + '" transform="translate(' + r(p.x) + " " + r(p.y) + ')">' +
+        '<rect x="-13" y="-13" width="26" height="26"/></g>';
+      labels += '<a class="station station--' + side + low + (i === 0 ? " is-on" : "") + '" data-i="' + i + '" href="#' +
+        escapeHtml(s.slug) + '" style="--x:' + r(q.x / LOOP.w * 100) + "%;--y:" + r(q.y / LOOP.h * 100) + '%">' +
+        '<span class="station__n">' + pad2(i + 1) + "</span>" +
+        '<span class="station__name">' + escapeHtml(s.name) + "</span></a>";
+    });
+    var lf = loopPoint(360 - 180 / n, LOOP.r + 54);
+    var fbLabel = loopLabel()
+      ? '<span class="lv-fblabel" style="--x:' + r(lf.x / LOOP.w * 100) + "%;--y:" + r(lf.y / LOOP.h * 100) + '%">' +
+          escapeHtml(loopLabel()) + "</span>"
+      : "";
+    var p0 = loopPoint(0, LOOP.r);
+
+    var svg =
+      '<svg class="lv-svg" viewBox="0 0 ' + LOOP.w + " " + LOOP.h + '" aria-hidden="true" focusable="false">' +
+        '<g class="lv-ticks">' + ticks + "</g>" +
+        '<circle class="lv-track" cx="' + LOOP.cx + '" cy="' + LOOP.cy + '" r="' + LOOP.r + '"/>' +
+        '<circle class="lv-progress" cx="' + LOOP.cx + '" cy="' + LOOP.cy + '" r="' + LOOP.r + '" ' +
+          'transform="rotate(-90 ' + LOOP.cx + " " + LOOP.cy + ')" stroke-dasharray="' + r(C) + '" stroke-dashoffset="' + r(C) + '"/>' +
+        feedback + chevrons + nodes +
+        '<g class="lv-token" transform="translate(' + r(p0.x) + " " + r(p0.y) + ')">' +
+          '<circle class="lv-halo" r="26"/><rect x="-9" y="-9" width="18" height="18" transform="rotate(45)"/></g>' +
+      "</svg>";
+
+    var first = st[0] || { name: "", sum: "" };
+    var center =
+      '<div class="clock">' +
+        '<span class="clock__label">' + escapeHtml(ui("shift")) + "</span>" +
+        '<span class="clock__time" data-clock>00:00</span>' +
+        '<span class="clock__bar" aria-hidden="true"><span data-clockbar></span></span>' +
+        '<span class="clock__scale" aria-hidden="true"><span>00</span><span>02</span><span>04</span><span>06</span><span>08</span></span>' +
+        '<span class="clock__now">' +
+          '<span class="clock__lap" data-lap>' + escapeHtml(ui("lap").replace("{n}", "1")) + "</span>" +
+          '<span class="clock__station" data-station>' + pad2(1) + " " + escapeHtml(first.name) + "</span>" +
+          '<span class="clock__sum" data-sum>' + escapeHtml(first.sum) + "</span>" +
+        "</span>" +
+      "</div>";
+
+    return '<figure class="loopviz" role="group" aria-label="' + escapeHtml(ui("loopAria")) + '">' +
+      '<div class="loopviz__stage"><div class="loopviz__ring">' + svg + labels + fbLabel + "</div>" + center + "</div>" +
+      '<figcaption class="loopviz__cap">' + escapeHtml(ui("asleep")) + "</figcaption>" +
+    "</figure>";
+  }
+
+  /* Roman-legion hierarchy, drawn as a plain org tree (thesis margin) */
+  var LEGION_SVG = (function () {
+    var s = '<svg class="legion" viewBox="0 0 300 170" aria-hidden="true" focusable="false">';
+    var rows = [[150], [60, 150, 240], [30, 60, 90, 120, 150, 180, 210, 240, 270]];
+    var ys = [16, 76, 140];
+    rows[1].forEach(function (x) { s += '<path d="M150,30 V46 H' + x + ' V62"/>'; });
+    rows[2].forEach(function (x, i) { var px = rows[1][Math.floor(i / 3)]; s += '<path d="M' + px + ',90 V108 H' + x + ' V126"/>'; });
+    rows.forEach(function (row, ri) {
+      row.forEach(function (x) { s += '<rect x="' + (x - 12) + '" y="' + (ys[ri] - 12) + '" width="24" height="24"/>'; });
+    });
+    return s + "</svg>";
+  })();
+
   /* small circular-arrow glyph: the page's one recurring mark (a loop) */
   var LOOP_GLYPH =
     '<svg class="loop-glyph" viewBox="0 0 32 32" aria-hidden="true" focusable="false">' +
@@ -160,30 +287,23 @@
         lead = '<p class="hero__meta">' + escapeHtml(t(sec.meta)) + "</p>";
       }
 
-      /* the first stat is the headline figure; the rest sit in a small ledger */
+      /* the talk's numbers, set like a machine's rating plate: label, leader
+         dots, value — the first row is the headline figure */
       var stats = sec.stats || [];
       var figures = "";
       if (stats.length) {
-        var top = stats[0];
-        var pull =
-          '<p class="pull">' +
-            '<span class="pull__num">' + escapeHtml(top.prefix || "") + escapeHtml(fmtNum(top.value)) +
-              (top.suffix ? '<span class="pull__aff">' + escapeHtml(top.suffix) + "</span>" : "") +
-            "</span>" +
-            '<span class="pull__label">' + escapeHtml(t(top.label)) + "</span>" +
-          "</p>";
-        var ledger = stats.slice(1).map(function (s) {
-          return '<div class="ledger__row">' +
-            "<dt>" + escapeHtml(s.prefix || "") + escapeHtml(fmtNum(s.value)) + escapeHtml(s.suffix || "") + "</dt>" +
-            "<dd>" + escapeHtml(t(s.label)) + "</dd>" +
+        var rows = stats.map(function (s, i) {
+          return '<div class="plate__row' + (i === 0 ? " is-key" : "") + '">' +
+            "<dt>" + escapeHtml(t(s.label)) + "</dt>" +
+            "<dd>" + escapeHtml(s.prefix || "") + escapeHtml(fmtNum(s.value)) + escapeHtml(s.suffix || "") + "</dd>" +
           "</div>";
         }).join("");
-        figures = '<aside class="hero__figures" aria-label="' + escapeHtml(ui("figures")) + '">' +
-          pull + (ledger ? '<dl class="ledger">' + ledger + "</dl>" : "") +
-        "</aside>";
+        figures = '<aside class="plate" aria-label="' + escapeHtml(ui("figures")) + '">' +
+          '<dl class="plate__list">' + rows + "</dl></aside>";
       }
 
-      return head + '<div class="hero__body">' + lead + figures + "</div>";
+      return '<div class="hero__grid">' + head + loopFigure() + "</div>" +
+        '<div class="hero__foot">' + lead + figures + "</div>";
     },
 
     /* ---- layers: a stacked architecture with a return arrow 5 -> 1 ---- */
@@ -193,7 +313,7 @@
         var name = parts.length > 1 ? parts.slice(1).join(" · ") : parts[0];
         var kicker = parts.length > 1 && !/^\d+$/.test(parts[0].trim()) ? parts[0] : "";
         return '<li class="layer"' + idAttr(item.slug) + ' style="--i:' + i + '">' +
-          '<span class="layer__n" aria-hidden="true">' + (i + 1) + "</span>" +
+          '<span class="layer__n" aria-hidden="true">' + pad2(i + 1) + "</span>" +
           '<div class="layer__head">' +
             (kicker ? '<span class="layer__kicker">' + escapeHtml(kicker) + "</span>" : "") +
             '<h3 class="layer__title">' + escapeHtml(name) + "</h3>" +
@@ -205,7 +325,7 @@
       }).join("");
       var back = t(sec.loopLabel)
         ? '<div class="layers__return" aria-hidden="true"><span class="layers__return-label">' +
-            escapeHtml(t(sec.loopLabel)) + "</span></div>"
+            escapeHtml(t(sec.loopLabel)) + "</span><span class=\"layers__return-head\"></span></div>"
         : "";
       return sectionHead(sec) +
         '<div class="layers-wrap"><ol class="layers">' + items + "</ol>" + back + "</div>";
@@ -252,8 +372,9 @@
 
     /* ---- timeline: dated steps down a rail ---- */
     timeline: function (sec) {
-      var items = (sec.events || []).map(function (ev) {
-        return '<li class="tl-item">' +
+      var evs = sec.events || [];
+      var items = evs.map(function (ev, i) {
+        return '<li class="tl-item' + (i === evs.length - 1 ? " is-dawn" : "") + '">' +
           '<span class="tl-date">' + escapeHtml(t(ev.date)) + "</span>" +
           '<div class="tl-main">' +
             '<h3 class="tl-title">' + escapeHtml(t(ev.title)) + "</h3>" +
@@ -261,15 +382,24 @@
           "</div>" +
         "</li>";
       }).join("");
-      return sectionHead(sec) + '<ol class="timeline">' + items + "</ol>";
+      return '<div class="night">' + sectionHead(sec) + '<ol class="timeline">' + items + "</ol></div>";
     },
 
     /* ---- chapters: a table of contents; each timestamp opens the video there ---- */
     chapters: function (sec) {
-      var items = (sec.events || []).map(function (ev) {
+      var toSecs = function (s) {
+        var mm = /^(\d+):(\d{2})$/.exec(s);
+        return mm ? parseInt(mm[1], 10) * 60 + parseInt(mm[2], 10) : 0;
+      };
+      var evs = sec.events || [];
+      var last = evs.length ? toSecs(t(evs[evs.length - 1].date)) : 0;
+      var span = last + 60;                 // the last chapter runs about a minute
+      var items = evs.map(function (ev) {
         var stamp = t(ev.date);
+        var pos = span ? r(toSecs(stamp) / span * 100) : 0;
         var inner =
-          '<span class="toc__time">' + escapeHtml(stamp) + "</span>" +
+          '<span class="toc__time">' + escapeHtml(stamp) +
+            '<span class="toc__scrub" aria-hidden="true" style="--pos:' + pos + '%"></span></span>' +
           '<span class="toc__text"><span class="toc__title">' + escapeHtml(t(ev.title)) + "</span>" +
           '<span class="toc__body">' + escapeHtml(t(ev.body)) + "</span></span>";
         var m = /^(\d+):(\d{2})$/.exec(stamp);
@@ -282,7 +412,7 @@
         }
         return '<li class="toc__item">' + inner + "</li>";
       }).join("");
-      return sectionHead(sec) + '<ol class="toc">' + items + "</ol>";
+      return sectionHead(sec) + '<ol class="toc" style="--rows:' + Math.ceil(evs.length / 2) + '">' + items + "</ol>";
     },
 
     /* ---- bars: inline-SVG bar chart (no chart library; unused here) ---- */
@@ -347,7 +477,17 @@
           by +
         "</figure>";
       }).join("");
-      return sectionHead(sec) + '<div class="quotes">' + items + "</div>";
+      var dots = "";
+      for (var d = 0; d < 14; d++) {
+        var a = (d / 14) * 2 * Math.PI + 0.2;
+        dots += '<circle class="brain__human" cx="' + r(120 + 104 * Math.cos(a)) + '" cy="' + r(120 + 104 * Math.sin(a)) + '" r="7"/>';
+      }
+      var brain = '<div class="brain" aria-hidden="true"><svg viewBox="0 0 240 240" focusable="false">' +
+        '<circle class="brain__core" cx="120" cy="120" r="86"/>' +
+        '<circle class="brain__rim" cx="120" cy="120" r="104"/>' + dots + "</svg>" +
+        '<span class="brain__label">' + escapeHtml(ui("brain")) + "</span>" +
+        '<span class="brain__edge">' + escapeHtml(ui("edge")) + "</span></div>";
+      return sectionHead(sec) + '<div class="humans">' + brain + '<div class="quotes">' + items + "</div></div>";
     },
 
     /* ---- prose: ordered rich-text blocks (p / h3 / ul) ---- */
@@ -362,7 +502,9 @@
         }
         return "<p>" + escapeHtml(t(b.text)) + "</p>";
       }).join("");
-      return sectionHead(sec) + '<div class="prose">' + body + "</div>";
+      var fig = sec.id === "thesis" ? LEGION_SVG : "";
+      return '<div class="split split--prose"><div class="split__head">' + sectionHead(sec) + fig + "</div>" +
+        '<div class="prose">' + body + "</div></div>";
     },
 
     /* ---- sources: a plain bibliography ---- */
@@ -448,6 +590,7 @@
     paintSections();
     setupScrollSpy();
     updateNavFade();
+    startLoop();
   }
 
   /* =======================================================================
@@ -500,6 +643,76 @@
   }
 
   /* =======================================================================
+     HERO LOOP — the night shift. One lap of the loop is one hour; eight laps
+     take the clock from 00:00 to 08:00, then the night starts over. Runs
+     only while the hero is on screen, never with reduced motion (the static
+     markup already shows lap 1 at the first station).
+     ===================================================================== */
+  var LAP_MS = 3200, NIGHT_LAPS = 8, DAWN_HOLD_MS = 2600;
+  var loopRAF = 0;
+  function startLoop() {
+    if (loopRAF) { cancelAnimationFrame(loopRAF); loopRAF = 0; }
+    var fig = document.querySelector(".loopviz");
+    if (!fig) return;
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    var st = layerStations(), n = st.length || 5;
+    var token = fig.querySelector(".lv-token");
+    var prog = fig.querySelector(".lv-progress");
+    var nodes = fig.querySelectorAll(".lv-node");
+    var labels = fig.querySelectorAll(".station");
+    var clock = fig.querySelector("[data-clock]");
+    var bar = fig.querySelector("[data-clockbar]");
+    var lapEl = fig.querySelector("[data-lap]");
+    var stEl = fig.querySelector("[data-station]");
+    var sumEl = fig.querySelector("[data-sum]");
+    var C = 2 * Math.PI * LOOP.r;
+    var visible = true, t0 = null, shown = -1, shownLap = -1;
+
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }).observe(fig);
+    }
+
+    function setStation(i) {
+      if (i === shown) return;
+      shown = i;
+      [].forEach.call(nodes, function (el) { el.classList.toggle("is-on", +el.dataset.i === i); });
+      [].forEach.call(labels, function (el) { el.classList.toggle("is-on", +el.dataset.i === i); });
+      if (i < 0) {
+        stEl.textContent = ui("morning");
+        sumEl.textContent = "";
+      } else {
+        stEl.textContent = pad2(i + 1) + " " + st[i].name;
+        sumEl.textContent = st[i].sum;
+      }
+    }
+
+    function frame(now) {
+      loopRAF = requestAnimationFrame(frame);
+      if (!visible || document.hidden) { t0 = null; return; }
+      if (t0 === null) t0 = now - (fig._elapsed || 0);
+      var el = now - t0;
+      var night = NIGHT_LAPS * LAP_MS;
+      if (el > night + DAWN_HOLD_MS) { t0 = now; el = 0; }
+      fig._elapsed = el;
+      var dawn = el >= night;
+      var e = Math.min(el, night);
+      var lap = Math.min(Math.floor(e / LAP_MS), NIGHT_LAPS - 1);
+      var f = dawn ? 1 : (e % LAP_MS) / LAP_MS;
+      var p = loopPoint(f * 360, LOOP.r);
+      token.setAttribute("transform", "translate(" + r(p.x) + " " + r(p.y) + ")");
+      prog.setAttribute("stroke-dashoffset", r(C * (1 - f)));
+      var mins = Math.floor(e / LAP_MS * 60);
+      clock.textContent = pad2(Math.floor(mins / 60)) + ":" + pad2(mins % 60);
+      bar.style.width = r(e / night * 100) + "%";
+      fig.classList.toggle("is-dawn", dawn);
+      if (lap !== shownLap) { shownLap = lap; lapEl.textContent = ui("lap").replace("{n}", String(lap + 1)); }
+      setStation(dawn ? -1 : Math.min(Math.floor(f * n), n - 1));
+    }
+    loopRAF = requestAnimationFrame(frame);
+  }
+
+  /* =======================================================================
      THEME + LANG
      ===================================================================== */
   function applyTheme() {
@@ -507,7 +720,7 @@
     var icon = $("themeIcon");
     if (icon) icon.textContent = state.theme === "dark" ? "light_mode" : "dark_mode";
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", state.theme === "dark" ? "#15110C" : "#F6F1E8");
+    if (meta) meta.setAttribute("content", state.theme === "dark" ? "#131619" : "#1F2327");
   }
   function applyLangChrome() {
     var other = state.lang === "en" ? "zh" : "en";
@@ -577,6 +790,7 @@
 
     navInner.addEventListener("scroll", updateNavFade, { passive: true });
     window.addEventListener("resize", updateNavFade);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(updateNavFade);
   }
 
   /* deep links (#section or an item's #slug): the static HTML already put the
@@ -586,7 +800,7 @@
     var id = decodeURIComponent(location.hash.slice(1));
     if (!id) return;
     var el = document.getElementById(id);
-    if (el) el.scrollIntoView({ block: "start" });
+    if (el) el.scrollIntoView({ block: "start", behavior: "instant" });
   }
 
   /* =======================================================================
